@@ -4,6 +4,8 @@ CLASS zcl_09_carrier DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
+    INTERFACES zif_009_partner.
+
     DATA name TYPE string READ-ONLY.
     DATA airplanes TYPE TABLE OF REF TO zcl_09_airplane.
 
@@ -17,9 +19,6 @@ CLASS zcl_09_carrier DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_09_cargo_plane
       RAISING
                 zcx_09_cargo_plane.
-
-    METHODS to_string
-      RETURNING VALUE(result) TYPE string.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -37,13 +36,11 @@ CLASS zcl_09_carrier IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_biggest_cargo_plane.
-    LOOP AT airplanes INTO DATA(airplane).
-      IF airplane IS INSTANCE OF zcl_09_cargo_plane.
-        DATA(cargo_plane) = CAST zcl_09_cargo_plane( airplane ).
+    LOOP AT airplanes INTO DATA(airplane) WHERE table_line IS INSTANCE OF zcl_09_cargo_plane.
+      DATA(cargo_plane) = CAST zcl_09_cargo_plane( airplane ).
 
-        IF result IS INITIAL OR ( cargo_plane->cargo_in_tons > result->cargo_in_tons ).
-          result = cargo_plane.
-        ENDIF.
+      IF result IS INITIAL OR ( cargo_plane->cargo_in_tons > result->cargo_in_tons ).
+        result = cargo_plane.
       ENDIF.
     ENDLOOP.
 
@@ -52,8 +49,14 @@ CLASS zcl_09_carrier IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-  METHOD to_string.
-    result = name.
+  METHOD zif_009_partner~to_string.
+    result = name && ';'.
+
+    LOOP AT airplanes INTO DATA(airplane).
+      result &&= airplane->to_string(  ) && ';'.
+    ENDLOOP.
+
+    result &&= |Biggest Cargo Plane: { get_biggest_cargo_plane(  )->to_string(  ) }|.
   ENDMETHOD.
 
 ENDCLASS.

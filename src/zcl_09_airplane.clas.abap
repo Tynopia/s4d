@@ -32,7 +32,7 @@ ENDCLASS.
 
 CLASS zcl_09_airplane IMPLEMENTATION.
   METHOD constructor.
-    IF name IS INITIAL OR plane_type IS INITIAL.
+    IF name IS INITIAL.
       throw( 'NAME' ).
     ENDIF.
 
